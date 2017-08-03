@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "cmap.h"
+#include "c_config.h"
 namespace Ui {
 class MainWindow;
 }
@@ -29,6 +30,8 @@ private slots:
     void on_lineEdit_returnPressed();
 
 private:
+    CConfig mConfig;
+    double mLat,mLon;
     double mScale;
     Ui::MainWindow *ui;
     QPoint pressPos;
