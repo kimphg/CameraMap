@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include "cmap.h"
 #include "c_config.h"
+#include "c_camera.h"
 namespace Ui {
 class MainWindow;
 }
@@ -30,7 +31,7 @@ private slots:
     void on_lineEdit_returnPressed();
 
 private:
-    CConfig mConfig;
+
     double mLat,mLon;
     double mScale;
     Ui::MainWindow *ui;
@@ -39,6 +40,7 @@ private:
     int dyMap;
 
     void drawCrossHairMark(int x, int y, QPainter *p);
+    void LoadSettings();
 };
 
 #endif // MAINWINDOW_H

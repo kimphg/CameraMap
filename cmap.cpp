@@ -7,19 +7,19 @@
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
-
+// tile size in pixels
+#define  TDIM 256
 
 uint qHash(const QPoint& p)
 {
     return p.x() * 17 ^ p.y();
 }
-// tile size in pixels
-const int tdim = 256;
+
 
 CMap::CMap(QObject *parent): mScale(10),QObject(parent)
 {
     //khoi tao mot vung pixmap co kich thuoc 256 X 256 va boi day no voi mau lightGray
-    m_emptyTile = QPixmap(tdim, tdim);
+    m_emptyTile = QPixmap(TDIM, TDIM);
     m_emptyTile.fill(Qt::darkGray);
     mMapWidth = 1024;
     mMapHeight = 1024;
@@ -43,7 +43,7 @@ void CMap::SetType(int type)
     default:
         break;
     }
-    OpenMIF("D:/HR2D/MIF/HP_TEXT.MIF");
+    //OpenMIF("D:/HR2D/MIF/HP_TEXT.MIF");
     Repaint();
 }
 
@@ -114,8 +114,8 @@ void CMap::setImgSize(int width, int height)
     if(mapImage)delete mapImage;
     mMapWidth = width*1.25;
     mMapHeight = height*1.25;
-    // why 1.25??? - mapImage will be rescaled before sending to user
-    //with scale ratio from 0.8 to 1.6 original size
+    // why 1.25??? - because mapImage will be rescaled before sending to user
+    //with scale ratio from 0.8 to 1.6 original size, this is to avoid the blank space when scale ratio is < 1;
     mapImage = new QPixmap(mMapWidth,mMapHeight);
 }
 
@@ -177,24 +177,24 @@ void CMap::invalidate()
 
     // top-left corner of the center tile
     //diem tren cung ben trai cua manh ban do trung tam
-    int xp = mMapWidth / 2 - (tx - floor(tx)) * tdim;
-    int yp = mMapHeight / 2 - (ty - floor(ty)) * tdim;
+    int xp = mMapWidth / 2 - (tx - floor(tx)) * TDIM;
+    int yp = mMapHeight / 2 - (ty - floor(ty)) * TDIM;
 
     // first tile vertical and horizontal
     // manh ban do dau tien theo chieu doc va ngang
-    int xa = (xp + tdim - 1) / tdim;
-    int ya = (yp + tdim - 1) / tdim;
+    int xa = (xp + TDIM - 1) / TDIM;
+    int ya = (yp + TDIM - 1) / TDIM;
     int xs = static_cast<int>(tx) - xa;
     int ys = static_cast<int>(ty) - ya;
 
     // offset for top-left tile
     // offset cho manh tren cung ben trai
-    m_offset = QPoint(xp - xa * tdim, yp - ya * tdim);
+    m_offset = QPoint(xp - xa * TDIM, yp - ya * TDIM);
 
     // last tile vertical and horizontal
     // manh cuoi cung doc va ngang
-    int xe = static_cast<int>(tx) + (mMapWidth - xp - 1) / tdim;
-    int ye = static_cast<int>(ty) + (mMapHeight - yp - 1) / tdim;
+    int xe = static_cast<int>(tx) + (mMapWidth - xp - 1) / TDIM;
+    int ye = static_cast<int>(ty) + (mMapHeight - yp - 1) / TDIM;
 
     // build a rect
     // xay dung ban do
@@ -338,9 +338,9 @@ void CMap::LoadMap()
 QRect CMap::tileRect(const QPoint &tp)
 {
     QPoint t = tp - m_tilesRect.topLeft();
-    int x = t.x() * tdim + m_offset.x();
-    int y = t.y() * tdim + m_offset.y();
-    return QRect(x, y, tdim, tdim);
+    int x = t.x() * TDIM + m_offset.x();
+    int y = t.y() * TDIM + m_offset.y();
+    return QRect(x, y, TDIM, TDIM);
 }
 double CMap::getLat()
 {

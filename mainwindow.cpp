@@ -3,25 +3,37 @@
 
 #include <QPaintEvent>
 #include <QPainter>
-
+QString mPath;
+CConfig *mConfig= new CConfig;
+//QList<CCamera*> cameraList;
 MainWindow::MainWindow(QWidget *parent) :dxMap(0),dyMap(0),
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-
+    //init UI elements
     ui->setupUi(this);
-    map = new CMap(this);
-    QString mPath = mConfig.getString("mPath","C:/FlameRun/K9Map/");
-    mLat = mConfig.getDouble("mLat",21.117);
-    mLon = mConfig.getDouble("mLon",105.325);
     ui->frame->setHidden(true);
-    map->setCenterPos(mLat,mLon);
-    mScale = 500;
-    map->setPath(mPath);
     this->setGeometry(100,100,1024,768);
+    //Load initial setting from config file
+    LoadSettings();
+    // init Map Object
+    map = new CMap(this);
+    map->setCenterPos(mLat,mLon);
+    map->setPath(mPath);
     isPressed = false;
-}
+    CCamera *cam = new CCamera();
+    cam->setCamName("Camera 1");
+    cam->requestAzi();
+    //cameraList.push_back(cam);
 
+}
+void MainWindow::LoadSettings()
+{
+    mScale = mConfig->getDouble("mScale",500);
+    mPath = mConfig->getString("mPath","C:/mapData/");
+    mLat = mConfig->getDouble("mLat",21.117);
+    mLon = mConfig->getDouble("mLon",105.325);
+}
 MainWindow::~MainWindow()
 {
     delete ui;
@@ -166,7 +178,7 @@ void MainWindow::wheelEvent(QWheelEvent* event)
 {
     if(event->delta()>0)mScale*=1.2;
     if(event->delta()<0)mScale/=1.2;
-    if(mScale>4000)mScale = 4000;
+    if(mScale>8000)mScale = 8000;
     if(mScale<1)mScale = 1;
     update();
     repaint();

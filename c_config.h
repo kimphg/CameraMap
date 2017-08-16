@@ -14,6 +14,7 @@
 #include <QFile>
 #include <QHash>
 #include <QXmlStreamReader>
+
 class CConfig
 {
 public:
@@ -32,4 +33,5 @@ private:
     void readFile();
     void SaveToFile();
 };
+
 #endif
