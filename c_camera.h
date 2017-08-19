@@ -20,6 +20,15 @@ public:
     void setPassword(const QString &password);
     QString iP() const;
     void setIP(const QString &iP);
+    double lat() const;
+    void setLat(double lat);
+
+    double lon() const;
+    void setLon(double lon);
+
+    double azi() const;
+    void setAzi(double azi);
+
 private:
     double  mLat,mLon;
     double  mAzi,mElevation;

@@ -19,6 +19,7 @@ public:
     CMap *map;
 
     bool isPressed;
+    void initCameras();
 protected:
     void wheelEvent(QWheelEvent *event);
     void paintEvent(QPaintEvent *e);
@@ -41,6 +42,10 @@ private:
 
     void drawCrossHairMark(int x, int y, QPainter *p);
     void LoadSettings();
+    void drawMap(QPainter *p);
+    void drawCameras(QPainter *p);
+    short lon2x(float lon);
+    short lat2y(float lat);
 };
 
 #endif // MAINWINDOW_H

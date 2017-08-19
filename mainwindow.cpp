@@ -5,7 +5,7 @@
 #include <QPainter>
 QString mPath;
 CConfig *mConfig= new CConfig;
-QList<CCamera*> cameraList;
+QList<CCamera> cameraList;
 MainWindow::MainWindow(QWidget *parent) :dxMap(0),dyMap(0),
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -21,10 +21,39 @@ MainWindow::MainWindow(QWidget *parent) :dxMap(0),dyMap(0),
     map->setCenterPos(mLat,mLon);
     map->setPath(mPath);
     isPressed = false;
-    CCamera *cam = new CCamera();
-    cam->setCamName("Camera 1");!!!
-    cam->requestAzi();
-    cameraList.push_back(cam);
+    initCameras();
+
+}
+short MainWindow::lon2x(float lon)
+{
+   double refLat = mLat*0.00872664625997f;
+   return  ( width()/2 + dxMap + ((lon - mLon) * 105.0*cos(refLat))*mScale);
+}
+short MainWindow::lat2y(float lat)
+{
+   return (height()/2 + dyMap - ((lat - mLat) * 111.31949079327357f)*mScale);
+}
+
+void MainWindow::initCameras()
+{
+    CCamera cam1 ;
+    cam1.setCamName("Camera 1");
+    cam1.setIP("192.168.100.100");
+    cam1.setLat(21.111230);
+    cam1.setLon(105.322770);
+    cameraList.push_back(cam1);
+    CCamera cam2 ;
+    cam2.setCamName("Camera 2");
+    cam2.setIP("192.168.100.101");
+    cam2.setLat(21.107606);
+    cam2.setLon(105.330944);
+    cameraList.push_back(cam2);
+    CCamera cam3 ;
+    cam3.setCamName("Camera 3");
+    cam3.setIP("192.168.100.102");
+    cam3.setLat(21.125846);
+    cam3.setLon(105.322995);
+    cameraList.push_back(cam3);
 
 }
 void MainWindow::LoadSettings()
@@ -39,52 +68,68 @@ MainWindow::~MainWindow()
     delete ui;
     delete mConfig;
 }
-
-void MainWindow::paintEvent(QPaintEvent * e)
+void MainWindow::drawMap(QPainter *p)
 {
-    e=e;
-    QPainter p(this);
     ui->label_scale->setText("OSM scale factor:" + QString::number(map->getScaleRatio()));
     QPixmap pix = map->getImage(mScale);
-    p.drawPixmap((width()/2.0-pix.width()/2.0)+dxMap,
+    p->drawPixmap((width()/2.0-pix.width()/2.0)+dxMap,
                  (height()/2.0-pix.height()/2.0)+dyMap,
                  pix.width(),pix.height(),pix
                  );
-    p.setPen(QPen(Qt::white,2));
-
+    p->setPen(QPen(Qt::white,2));
 
     // draw the reference 1km line in top left of the map
     if(this->mScale<width()/2)
     {
-        p.drawLine(30,10,30+this->mScale,10);
-        p.drawText(rect(), Qt::AlignTop|Qt::TextWordWrap,"1 km");
+        p->drawLine(30,10,30+this->mScale,10);
+        p->drawText(rect(), Qt::AlignTop|Qt::TextWordWrap,"1 km");
     }
     else if(this->mScale<width())
     {
-        p.drawLine(30,10,30+this->mScale/2,10);
-        p.drawText(rect(), Qt::AlignTop|Qt::TextWordWrap,"500m");
+        p->drawLine(30,10,30+this->mScale/2,10);
+        p->drawText(rect(), Qt::AlignTop|Qt::TextWordWrap,"500m");
     }
     else if(this->mScale/5<width()/2)
     {
-        p.drawLine(30,10,30+this->mScale/5,10);
-        p.drawText(rect(), Qt::AlignTop|Qt::TextWordWrap,"200m");
+        p->drawLine(30,10,30+this->mScale/5,10);
+        p->drawText(rect(), Qt::AlignTop|Qt::TextWordWrap,"200m");
     }
     else if(this->mScale/10<width()/2)
     {
-        p.drawLine(30,10,30+this->mScale/10,10);
-        p.drawText(rect(), Qt::AlignTop|Qt::TextWordWrap,"100m");
+        p->drawLine(30,10,30+this->mScale/10,10);
+        p->drawText(rect(), Qt::AlignTop|Qt::TextWordWrap,"100m");
     }
     else if(this->mScale/20<width()/2)
     {
-        p.drawLine(30,10,30+this->mScale/20,10);
-        p.drawText(rect(), Qt::AlignTop|Qt::TextWordWrap,"50m");
+        p->drawLine(30,10,30+this->mScale/20,10);
+        p->drawText(rect(), Qt::AlignTop|Qt::TextWordWrap,"50m");
     }
-    p.drawText(rect().adjusted(10,20,0,0), Qt::AlignTop|Qt::TextWordWrap,QString::number(mLat,'f',4));
-    p.drawText(rect().adjusted(10,30,0,0), Qt::AlignTop|Qt::TextWordWrap,QString::number(mLon,'f',4));
+    p->drawText(rect().adjusted(10,20,0,0), Qt::AlignTop|Qt::TextWordWrap,QString::number(mLat,'f',4));
+    p->drawText(rect().adjusted(10,30,0,0), Qt::AlignTop|Qt::TextWordWrap,QString::number(mLon,'f',4));
     // draw the crosshair mark in the center
     int scrCtx = width()/2;
     int scrCty = height()/2;
-    drawCrossHairMark(scrCtx,scrCty,&p);
+    drawCrossHairMark(scrCtx,scrCty,p);
+}
+void MainWindow::drawCameras(QPainter *p)
+{
+    foreach (CCamera cam, cameraList) {
+        int cameraX = lon2x(cam.lon());
+        int cameraY = lat2y(cam.lat());
+        p->setPen(QPen(Qt::yellow,2));
+        p->drawEllipse(cameraX-5,cameraY-5,10,10);
+        p->drawText(cameraX-5,cameraY+15,100,100,0,cam.camName());
+        int range =
+        p->drawLine(cameraX,cameraY,cameraX+cam.azi(););
+    }
+}
+void MainWindow::paintEvent(QPaintEvent * e)
+{
+    e=e;
+    QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    drawMap(&p);
+    drawCameras(&p);
 }
 void MainWindow::drawCrossHairMark(int x,int y,QPainter* p)
 {
