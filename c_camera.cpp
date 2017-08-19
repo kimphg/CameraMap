@@ -64,7 +64,12 @@ void CCamera::requestAzi()
                 //name = name;
                 //QMessageBox::information(this,name,xmlReader.readElementText());
                 name = xmlReader.readElementText();
-                mAzi = !!
+                QStringList strList = name.split(' ');
+                bool ok;
+                double aziRad = strList.at(6).toInt(&ok,16)*255 + strList.at(7).toInt(&ok,16);
+                aziRad/= 10000.0 ;
+                mAzi = aziRad/3.1415926535*180;
+                mAzi = mAzi;
             }
         }
         xmlReader.readNext();

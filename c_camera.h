@@ -9,14 +9,21 @@ class CCamera
 {
 public:
     CCamera();
-    double  mLat,mLon;
-    double  mAzi,mElevation;
+
     void    requestAzi();
     void    requestElevation();
-    QString mIP,mUserName,mPassword,mCamName;
-
     QString camName() const;
     void setCamName(const QString &camName);
+    QString userName() const;
+    void setUserName(const QString &userName);
+    QString password() const;
+    void setPassword(const QString &password);
+    QString iP() const;
+    void setIP(const QString &iP);
+private:
+    double  mLat,mLon;
+    double  mAzi,mElevation;
+    QString mIP,mUserName,mPassword,mCamName;
 };
 
 #endif // C_CAMERA_H

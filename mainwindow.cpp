@@ -5,7 +5,7 @@
 #include <QPainter>
 QString mPath;
 CConfig *mConfig= new CConfig;
-//QList<CCamera*> cameraList;
+QList<CCamera*> cameraList;
 MainWindow::MainWindow(QWidget *parent) :dxMap(0),dyMap(0),
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -22,9 +22,9 @@ MainWindow::MainWindow(QWidget *parent) :dxMap(0),dyMap(0),
     map->setPath(mPath);
     isPressed = false;
     CCamera *cam = new CCamera();
-    cam->setCamName("Camera 1");
+    cam->setCamName("Camera 1");!!!
     cam->requestAzi();
-    //cameraList.push_back(cam);
+    cameraList.push_back(cam);
 
 }
 void MainWindow::LoadSettings()
@@ -37,6 +37,7 @@ void MainWindow::LoadSettings()
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete mConfig;
 }
 
 void MainWindow::paintEvent(QPaintEvent * e)
