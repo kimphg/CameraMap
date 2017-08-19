@@ -1,5 +1,7 @@
 #include "c_camera.h"
 
+#include <QEventLoop>
+
 //#include <QEventLoop>
 
 CCamera::CCamera()
@@ -38,37 +40,42 @@ void CCamera::requestAzi()
     /*reply = qnam->get(QNetworkRequest(QUrl("http://"+service+":12345678@"
     + mIP +"/rcp.xml?command=0x09A5&type=P_OCTET&direction=WRITE&num=1&payload=0x810006011201")));
     //http://192.168.100.100/rcp.xml?command=0x09A5&type=P_OCTET&direction=WRITE&num=1&payload=0x810006011201*/
-    reply = qnam->get(QNetworkRequest(QUrl("http://vnexpress.net")));
-//    QEventLoop loop;
-//    connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-//    loop.exec();
-    int waitTime=0;
-    while (!reply->isFinished())
-    {
-        waitTime++;
-    };
+    reply = qnam->get(QNetworkRequest(QUrl("http://127.0.0.1/index.xml")));
+    QEventLoop loop;
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    loop.exec();
+//    int waitTime=0;
+//    while (!reply->isFinished())
+//    {
+//        waitTime++;
+//        if(waitTime>1000)break;
+//    };
     QXmlStreamReader xmlReader;
     xmlReader.setDevice(reply);
-    while (xmlReader.readNextStartElement())
+    xmlReader.readNext();
+    while (!xmlReader.isEndDocument())
     {
-//        if(xmlReader.name()==XML_ELEM_NAME)
-//        {
-//           for (uint i=0;i<xmlReader.attributes().size();i++)
-//           {
-//               QXmlStreamAttribute attr = xml.attributes().at(i);
-//               hashData.insert( attr.name().toString(),
-//                                attr.value().toString());
-//           }
-//        }
-//        if (xmlReader.tokenType() == QXmlStreamReader::Invalid)
-//            xmlReader.readNext();
-//        // readNextStartElement() leaves the stream in
-//        // an invalid state at the end. A single readNext()
-//        // will advance us to EndDocument.
-//        if (xmlReader.hasError()) {
-//            continue;
-//        }
+
+        if (xmlReader.isStartElement())
+        {
+            QString name = xmlReader.name().toString();
+            if (name == "str" )
+            {
+                //name = name;
+                //QMessageBox::information(this,name,xmlReader.readElementText());
+                name = xmlReader.readElementText();
+                mAzi = !!
+            }
+        }
+        xmlReader.readNext();
+
     }
+    if (xmlReader.hasError())
+    {
+        return;
+        //std::cout << "XML error: " << xmlReader.errorString().data() << std::endl;
+    }
+
 }
 
 void CCamera::requestElevation()
