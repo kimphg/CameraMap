@@ -1,6 +1,7 @@
 #include "c_camera.h"
 
 #include <QEventLoop>
+#include <QtGui>
 
 //#include <QEventLoop>
 
@@ -10,6 +11,9 @@ CCamera::CCamera()
     mIP = "192.168.100.100";
     mUserName = "service";
     mPassword = "12345678";
+    mAzi = 0;
+    mAlarm = false;
+
 }
 
 void CCamera::requestAzi()
@@ -50,7 +54,8 @@ void CCamera::requestAzi()
                 double aziRad = strList.at(6).toInt(&ok,16)*255 + strList.at(7).toInt(&ok,16);
                 aziRad/= 10000.0 ;
                 mAzi = aziRad/3.1415926535*180;
-                //mAzi = mAzi;
+                if(mAzi<0)mAzi = 0;
+                if(mAzi>=360)mAzi = 0;
             }
         }
         xmlReader.readNext();
@@ -101,12 +106,23 @@ void CCamera::setLon(double lon)
 
 double CCamera::azi() const
 {
+
     return mAzi;
 }
 
 void CCamera::setAzi(double azi)
 {
     mAzi = azi;
+}
+
+bool CCamera::alarm() const
+{
+    return mAlarm;
+}
+
+void CCamera::setAlarm(bool alarm)
+{
+    mAlarm = alarm;
 }
 
 QString CCamera::password() const

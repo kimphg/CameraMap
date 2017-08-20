@@ -9,7 +9,6 @@ class CCamera
 {
 public:
     CCamera();
-
     void    requestAzi();
     void    requestElevation();
     QString camName() const;
@@ -29,8 +28,12 @@ public:
     double azi() const;
     void setAzi(double azi);
 
+    bool alarm() const;
+    void setAlarm(bool alarm);
+
 private:
     double  mLat,mLon;
+    bool mAlarm;
     double  mAzi,mElevation;
     QString mIP,mUserName,mPassword,mCamName;
 };

@@ -30,7 +30,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent *e);
 private slots:
     void on_lineEdit_returnPressed();
-
+    void readPendingDatagrams();
 private:
 
     double mLat,mLon;
@@ -44,8 +44,12 @@ private:
     void LoadSettings();
     void drawMap(QPainter *p);
     void drawCameras(QPainter *p);
-    short lon2x(float lon);
-    short lat2y(float lat);
+    int lon2x(double lon);
+    int lat2y(double lat);
+    void updateCameras();
+    void initSocket();
+
+    void processUdpData(QByteArray buffer);
 };
 
 #endif // MAINWINDOW_H
