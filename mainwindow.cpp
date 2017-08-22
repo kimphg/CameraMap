@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :dxMap(0),dyMap(0),
 }
 void MainWindow::updateCameras()
 {
+
     foreach (CCamera *cam, cameraList)
     {
         cam->requestAzi();
@@ -54,20 +55,24 @@ void MainWindow::initCameras()
     CCamera *cam1 = new CCamera();
     cam1->setCamName("Camera 1");
     cam1->setIP("192.168.100.100");
+    cam1->setAziNorth(mConfig->getDouble("AziNorth1",0));
     cam1->setLat(21.111230);
     cam1->setLon(105.322770);
     cameraList.push_back(cam1);
     CCamera *cam2 = new CCamera();
     cam2->setCamName("Camera 2");
     cam2->setIP("192.168.100.101");
-    cam2->setLat(21.107606);
-    cam2->setLon(105.330944);
+    cam2->setAziNorth(mConfig->getDouble("AziNorth2",0));
+    cam2->setLat(21.125846);
+    cam2->setLon(105.322995);
     cameraList.push_back(cam2);
     CCamera *cam3 = new CCamera();
     cam3->setCamName("Camera 3");
     cam3->setIP("192.168.100.102");
-    cam3->setLat(21.125846);
-    cam3->setLon(105.322995);
+    cam3->setAziNorth(mConfig->getDouble("AziNorth3",0));
+
+    cam3->setLat(21.107606);
+    cam3->setLon(105.330944);
     cameraList.push_back(cam3);
 
 }

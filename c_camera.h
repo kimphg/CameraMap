@@ -31,11 +31,14 @@ public:
     bool alarm() const;
     void setAlarm(bool alarm);
 
+    double aziNorth() const;
+    void setAziNorth(double aziNorth);
+
 private:
     QNetworkReply *reply;
     double  mLat,mLon;
     bool mAlarm;
-    double  mAziRad,mElevation;
+    double  mAziRad,mElevation,mAziNorth;
     QString mIP,mUserName,mPassword,mCamName;
     bool CheckLastReply();
 };
