@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :dxMap(0),dyMap(0),
     map->setPath(mPath);
     pUpdateTimer = new QTimer();
     connect(pUpdateTimer, SIGNAL(timeout()), this, SLOT(updateCameras()));
-    pUpdateTimer->start(500);
+    pUpdateTimer->start(1000);
     isPressed = false;
     initCameras();
 

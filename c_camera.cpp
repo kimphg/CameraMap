@@ -22,7 +22,8 @@ bool CCamera::CheckLastReply()
     if(!reply)return true;
     if(!reply->isFinished())
     {
-        return false;
+        reply->abort();
+        return true;
     }
     QXmlStreamReader xmlReader;
     xmlReader.setDevice(reply);
