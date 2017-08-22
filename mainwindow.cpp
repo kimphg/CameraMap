@@ -6,7 +6,7 @@
 #include <QUdpSocket>
 QString mPath;
 CConfig *mConfig= new CConfig;
-QList<CCamera> cameraList;
+QList<CCamera*> cameraList;
 QTimer *pUpdateTimer;
 QUdpSocket *udpSocket;
 MainWindow::MainWindow(QWidget *parent) :dxMap(0),dyMap(0),
@@ -25,15 +25,17 @@ MainWindow::MainWindow(QWidget *parent) :dxMap(0),dyMap(0),
     map->setPath(mPath);
     pUpdateTimer = new QTimer();
     connect(pUpdateTimer, SIGNAL(timeout()), this, SLOT(updateCameras()));
+    pUpdateTimer->start(500);
     isPressed = false;
     initCameras();
 
 }
 void MainWindow::updateCameras()
 {
-    foreach (CCamera cam, cameraList)
+    foreach (CCamera *cam, cameraList)
     {
-        cam.requestAzi();
+        cam->requestAzi();
+        update();
     }
 
 }
@@ -49,23 +51,23 @@ int MainWindow::lat2y(double lat)
 
 void MainWindow::initCameras()
 {
-    CCamera cam1;
-    cam1.setCamName("Camera 1");
-    cam1.setIP("192.168.100.100");
-    cam1.setLat(21.111230);
-    cam1.setLon(105.322770);
+    CCamera *cam1 = new CCamera();
+    cam1->setCamName("Camera 1");
+    cam1->setIP("192.168.100.100");
+    cam1->setLat(21.111230);
+    cam1->setLon(105.322770);
     cameraList.push_back(cam1);
-    CCamera cam2 ;
-    cam2.setCamName("Camera 2");
-    cam2.setIP("192.168.100.101");
-    cam2.setLat(21.107606);
-    cam2.setLon(105.330944);
+    CCamera *cam2 = new CCamera();
+    cam2->setCamName("Camera 2");
+    cam2->setIP("192.168.100.101");
+    cam2->setLat(21.107606);
+    cam2->setLon(105.330944);
     cameraList.push_back(cam2);
-    CCamera cam3 ;
-    cam3.setCamName("Camera 3");
-    cam3.setIP("192.168.100.102");
-    cam3.setLat(21.125846);
-    cam3.setLon(105.322995);
+    CCamera *cam3 = new CCamera();
+    cam3->setCamName("Camera 3");
+    cam3->setIP("192.168.100.102");
+    cam3->setLat(21.125846);
+    cam3->setLon(105.322995);
     cameraList.push_back(cam3);
 
 }
@@ -126,15 +128,15 @@ void MainWindow::drawMap(QPainter *p)
 }
 void MainWindow::drawCameras(QPainter *p)
 {
-    foreach (CCamera cam, cameraList) {
-        int cameraX = lon2x(cam.lon());
-        int cameraY = lat2y(cam.lat());
-        if(cam.alarm())p->setPen(QPen(Qt::red,3));
+    foreach (CCamera *cam, cameraList) {
+        int cameraX = lon2x(cam->lon());
+        int cameraY = lat2y(cam->lat());
+        if(cam->alarm())p->setPen(QPen(Qt::red,3));
             else p->setPen(QPen(Qt::yellow,2));
         p->drawEllipse(cameraX-5,cameraY-5,10,10);
-        p->drawText(cameraX-5,cameraY+15,100,100,0,cam.camName());
+        p->drawText(cameraX-5,cameraY+15,100,100,0,cam->camName());
         int range = 0.2*mScale;
-        p->drawLine(cameraX,cameraY,cameraX+range*cos(cam.azi()),cameraY-range*sin(cam.azi()));
+        p->drawLine(cameraX,cameraY,cameraX+range*cos(cam->azi()),cameraY-range*sin(cam->azi()));
     }
 }
 void MainWindow::initSocket()
@@ -157,8 +159,8 @@ void MainWindow::readPendingDatagrams()
 }
 void MainWindow::processUdpData(QByteArray buffer)
 {
-    QString str = QString::fromAscii(buffer.data());
-    QStringList strList = str.split(',');
+    QString str = QString::fromLatin1(buffer.data());
+    QStringList strList = str.split(';');
     if(strList.size()>2)
     {
         if(strList.at(0)=="alarm")
@@ -167,7 +169,7 @@ void MainWindow::processUdpData(QByteArray buffer)
             bool status  = strList.at(3).toInt();
             Q_ASSERT(camIndex>0);
             Q_ASSERT(camIndex<4);
-            cameraList.at(camIndex).setAlarm(status);
+            cameraList.at(camIndex)->setAlarm(status);
         }
     }
 }

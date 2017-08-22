@@ -31,6 +31,7 @@ protected:
 private slots:
     void on_lineEdit_returnPressed();
     void readPendingDatagrams();
+    void updateCameras();
 private:
 
     double mLat,mLon;
@@ -46,7 +47,7 @@ private:
     void drawCameras(QPainter *p);
     int lon2x(double lon);
     int lat2y(double lat);
-    void updateCameras();
+
     void initSocket();
 
     void processUdpData(QByteArray buffer);

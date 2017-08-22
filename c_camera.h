@@ -32,10 +32,12 @@ public:
     void setAlarm(bool alarm);
 
 private:
+    QNetworkReply *reply;
     double  mLat,mLon;
     bool mAlarm;
-    double  mAzi,mElevation;
+    double  mAziRad,mElevation;
     QString mIP,mUserName,mPassword,mCamName;
+    bool CheckLastReply();
 };
 
 #endif // C_CAMERA_H
