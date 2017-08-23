@@ -1,15 +1,16 @@
 #ifndef C_CAMERA_H
 #define C_CAMERA_H
-
+#define DEG2RAD 57.295779513
 #include <QtNetwork/QNetworkAccessManager>
 #include <QXmlStreamReader>
 #include <QNetworkReply>
+#include <QMainWindow>
 //extern CConfig *mConfig;
 class CCamera
 {
 public:
     CCamera();
-    void    requestAzi();
+    void    requestAzi(QMainWindow *parent);
     void    requestElevation();
     QString camName() const;
     void setCamName(const QString &camName);
@@ -34,11 +35,24 @@ public:
     double aziNorth() const;
     void setAziNorth(double aziNorth);
 
+    void requestElevation(QMainWindow *parent);
+    double elevation() const;
+    void setElevation(double elevation);
+
+    bool getIsScaning() const;
+
+    double getHeight() const;
+
+    bool getIsOnline() const;
+
 private:
-    QNetworkReply *reply;
+    //QNetworkReply *reply;
     double  mLat,mLon;
+    double mHeight;
     bool mAlarm;
-    double  mAziRad,mElevation,mAziNorth;
+    double mAzi,mElevation,mAziNorth;
+    bool isScaning,isOnline;
+    bool isNetworkRequestAwaiting;
     QString mIP,mUserName,mPassword,mCamName;
     bool CheckLastReply();
 };

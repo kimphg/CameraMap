@@ -11,15 +11,18 @@ CCamera::CCamera()
     mIP = "192.168.100.100";
     mUserName = "service";
     mPassword = "12345678";
-    mAziRad = 0;
+    mAzi = 0;
+    mElevation = -25;
     mAlarm = false;
-    reply = 0;
-
+    mHeight = 0.03;
+    isScaning = false;
+    isOnline = false;
 }
 
 bool CCamera::CheckLastReply()
-{
-    if(!reply)return true;
+{/*
+    if(!reply)
+        return true;
     if(!reply->isFinished())
     {
         reply->abort();
@@ -51,33 +54,131 @@ bool CCamera::CheckLastReply()
         }
         xmlReader.readNext();
 
-    }
-
-    reply=0;
+    }*/
     return true;
 }
-void CCamera::requestAzi()
+void CCamera::requestAzi(QMainWindow *parent)
 {
-
-    if(!CheckLastReply())return;
-    QNetworkAccessManager *qnam = new QNetworkAccessManager();
+    if(isNetworkRequestAwaiting)
+    {
+        isOnline = false;
+        return;
+    }
+    isNetworkRequestAwaiting = true;
+    QNetworkAccessManager *qnam = new QNetworkAccessManager(parent);
+    QEventLoop loop;
+    double oldAzi = mAzi;
+    QNetworkReply *reply ;
     reply = qnam->get(QNetworkRequest(QUrl("http://"
                                            +mUserName+":"+mPassword+"@"+ mIP
                                            +"/rcp.xml?command=0x09A5&type=P_OCTET&direction=WRITE&num=1&payload=0x810006011201")));
-    //http://192.168.100.100/rcp.xml?command=0x09A5&type=P_OCTET&direction=WRITE&num=1&payload=0x810006011201*/
-    //reply = qnam->get(QNetworkRequest(QUrl("http://127.0.0.1/index.xml")));
-//    QEventLoop loop;
-//    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-//    QObject::connect(reply, SIGNAL(error()), &loop, SLOT(quit()));
-//    loop.exec();
 
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    QObject::connect(parent, SIGNAL(destroyed()), &loop, SLOT(quit()));
+    loop.exec();
+    QXmlStreamReader xmlReader;
+    xmlReader.setDevice(reply);
+    xmlReader.readNext();
+    while (!xmlReader.atEnd() && !xmlReader.hasError())
+    {
+        if (xmlReader.isStartElement())
+        {
+            QString name = xmlReader.name().toString();
+            if (name == "str" )
+            {
+                //name = name;
+                //QMessageBox::information(this,name,xmlReader.readElementText());
+                name = xmlReader.readElementText();
+                QStringList strList = name.split(' ');
+                if ((strList.at(4)!="12")||strList.size()<8)break;
+                bool ok;
+                double aziRad =  strList.at(6).toInt(&ok,16)*255 + strList.at(7).toInt(&ok,16);
+                mAzi = 360-(aziRad/ 10000.0)*DEG2RAD+90 ;//aziRad/3.1415926535*180.0;
+                if(mAzi<0)mAzi +=360;
+                if(mAzi>=360)mAzi -=360;
+                if(qAbs(mAzi-oldAzi)<0.3)isScaning = false;
+                else    isScaning=true;
+                isOnline = true;
+            }
+            if (xmlReader.hasError())
+            {break;}
+        }
+        xmlReader.readNext();
 
-
+    }
+    qnam->deleteLater();
+    isNetworkRequestAwaiting = false;
 }
 
-void CCamera::requestElevation()
+void CCamera::requestElevation(QMainWindow *parent)
 {
+    if(isNetworkRequestAwaiting)return;
+    isNetworkRequestAwaiting = true;
+    QNetworkAccessManager *qnam = new QNetworkAccessManager(parent);
+    QEventLoop loop;
+    QNetworkReply *reply ;
+    reply = qnam->get(QNetworkRequest(QUrl("http://"
+                                           +mUserName+":"+mPassword+"@"+ mIP
+                                           +"/rcp.xml?command=0x09A5&type=P_OCTET&direction=WRITE&num=1&payload=0x810006011301")));
 
+    QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+    QObject::connect(parent, SIGNAL(destroyed()), &loop, SLOT(quit()));
+    loop.exec();
+    QXmlStreamReader xmlReader;
+    xmlReader.setDevice(reply);
+    xmlReader.readNext();
+    while (!xmlReader.atEnd() && !xmlReader.hasError())
+    {
+        if (xmlReader.isStartElement())
+        {
+            QString name = xmlReader.name().toString();
+            if (name == "str" )
+            {
+                //name = name;
+                //QMessageBox::information(this,name,xmlReader.readElementText());
+                name = xmlReader.readElementText();
+                QStringList strList = name.split(' ');
+                if ((strList.at(4)!="13")||strList.size()<8)break;
+                bool ok;
+                double aziRad =  strList.at(6).toInt(&ok,16)*255 + strList.at(7).toInt(&ok,16);
+
+                mElevation =  (aziRad/ 10000.0 - 3.1415926535)*DEG2RAD - 15 ;//aziRad/3.1415926535*180.0;
+                if(mElevation<-90)mElevation +=360;
+                if(mElevation>90)mElevation -=360;
+            }
+
+        }
+        xmlReader.readNext();
+
+    }
+    qnam->deleteLater();
+    reply->deleteLater();
+    isNetworkRequestAwaiting = false;
+}
+
+double CCamera::elevation() const
+{
+    return mElevation;
+}
+
+void CCamera::setElevation(double elevation)
+{
+    mElevation = elevation;
+}
+
+bool CCamera::getIsScaning() const
+{
+    return isScaning;
+}
+
+double CCamera::getHeight() const
+{
+    return mHeight;
+}
+
+bool CCamera::getIsOnline() const
+{
+    return isOnline;
 }
 
 QString CCamera::iP() const
@@ -112,12 +213,12 @@ void CCamera::setLon(double lon)
 
 double CCamera::azi() const
 {
-    return (mAziRad+mAziNorth/180.0*3.1415926535);
+    return (mAzi+mAziNorth);
 }
 
 void CCamera::setAzi(double azi)
 {
-    mAziRad = azi;
+    mAzi = azi;
 }
 
 bool CCamera::alarm() const

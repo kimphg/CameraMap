@@ -5,6 +5,7 @@
 #include <QPainter>
 #include <QUdpSocket>
 QString mPath;
+bool camBlinking = false;
 CConfig *mConfig= new CConfig;
 QList<CCamera*> cameraList;
 QTimer *pUpdateTimer;
@@ -23,19 +24,28 @@ MainWindow::MainWindow(QWidget *parent) :dxMap(0),dyMap(0),
     map = new CMap(this);
     map->setCenterPos(mLat,mLon);
     map->setPath(mPath);
-    pUpdateTimer = new QTimer();
-    connect(pUpdateTimer, SIGNAL(timeout()), this, SLOT(updateCameras()));
-    pUpdateTimer->start(1000);
+    //pUpdateTimer = new QTimer();
+    //connect(pUpdateTimer, SIGNAL(timeout()), this, SLOT(updateCameras()));
+    //pUpdateTimer->start(1000);
     isPressed = false;
     initCameras();
+    QThread* mThread = new QThread(this);
+    QTimer* timer = new QTimer(0); //parent must be null
+    timer->setInterval(1000);
+    timer->start();
+    timer->moveToThread(mThread);
+    connect(timer, SIGNAL(timeout()), this, SLOT(updateCameras()));
+    connect(this, SIGNAL(destroyed()), mThread, SLOT(quit()));
+    mThread->start();
 
 }
 void MainWindow::updateCameras()
 {
-
+    camBlinking = (!camBlinking);
     foreach (CCamera *cam, cameraList)
     {
-        cam->requestAzi();
+        cam->requestAzi(this);
+        cam->requestElevation(this);
         update();
     }
 
@@ -131,17 +141,40 @@ void MainWindow::drawMap(QPainter *p)
     int scrCty = height()/2;
     drawCrossHairMark(scrCtx,scrCty,p);
 }
+
 void MainWindow::drawCameras(QPainter *p)
 {
     foreach (CCamera *cam, cameraList) {
         int cameraX = lon2x(cam->lon());
         int cameraY = lat2y(cam->lat());
-        if(cam->alarm())p->setPen(QPen(Qt::red,3));
-            else p->setPen(QPen(Qt::yellow,2));
-        p->drawEllipse(cameraX-5,cameraY-5,10,10);
+        p->setPen(QPen(QColor(255,255,0),2));
+        p->drawEllipse(cameraX-8,cameraY-8,16,16);
         p->drawText(cameraX-5,cameraY+15,100,100,0,cam->camName());
-        int range = 0.2*mScale;
-        p->drawLine(cameraX,cameraY,cameraX+range*cos(cam->azi()),cameraY-range*sin(cam->azi()));
+        p->drawText(cameraX-5,cameraY+25,100,100,0,QString::number(cam->azi(),'f',1));
+        p->drawText(cameraX-5,cameraY+35,100,100,0,QString::number(cam->elevation(),'f',1));
+        if(!cam->getIsOnline())
+        {
+           p->drawLine(cameraX-6,cameraY-6,cameraX+6,cameraY+6);
+        }
+        if(camBlinking){
+            if(cam->alarm()||(!cam->getIsScaning()))
+                p->setPen(QPen(QColor(255,0,0),3));
+                else p->setPen(QPen(QColor(255,255,0),2));
+        }
+        int range1 =0.5*mScale,range2 = 0.8*mScale;
+        double ele1 = cam->elevation()-8;
+        double ele2 = cam->elevation()+8;
+        if(ele1)range1= cam->getHeight()/tan(-ele1/DEG2RAD)*mScale;
+        if(ele2)range2= cam->getHeight()/tan(-ele2/DEG2RAD)*mScale;
+        double azi = cam->azi()-9;
+        p->drawLine(cameraX+range1*sin(azi/DEG2RAD),cameraY-range1*cos(azi/DEG2RAD),cameraX+range2*sin(azi/DEG2RAD),cameraY-range2*cos(azi/DEG2RAD));
+        for(;azi<cam->azi()+9;azi+=1)
+        {
+            p->drawPoint(cameraX+range1*sin(azi/DEG2RAD),cameraY-range1*cos(azi/DEG2RAD));
+            p->drawPoint(cameraX+range2*sin(azi/DEG2RAD),cameraY-range2*cos(azi/DEG2RAD));
+        }
+        p->drawLine(cameraX+range1*sin(azi/DEG2RAD),cameraY-range1*cos(azi/DEG2RAD),cameraX+range2*sin(azi/DEG2RAD),cameraY-range2*cos(azi/DEG2RAD));
+
     }
 }
 void MainWindow::initSocket()
