@@ -68,6 +68,7 @@ void MainWindow::initCameras()
     cam1->setAziNorth(mConfig->getDouble("AziNorth1",0));
     cam1->setLat(21.111230);
     cam1->setLon(105.322770);
+    cam1->setHeight(mConfig->getDouble("CamHeight1",0.03));
     cameraList.push_back(cam1);
     CCamera *cam2 = new CCamera();
     cam2->setCamName("Camera 2");
@@ -75,14 +76,15 @@ void MainWindow::initCameras()
     cam2->setAziNorth(mConfig->getDouble("AziNorth2",0));
     cam2->setLat(21.125846);
     cam2->setLon(105.322995);
+    cam2->setHeight(mConfig->getDouble("CamHeight2",0.04));
     cameraList.push_back(cam2);
     CCamera *cam3 = new CCamera();
     cam3->setCamName("Camera 3");
     cam3->setIP("192.168.100.102");
     cam3->setAziNorth(mConfig->getDouble("AziNorth3",0));
-
     cam3->setLat(21.107606);
-    cam3->setLon(105.330944);
+    cam3->setLon(105.3304);
+    cam3->setHeight(mConfig->getDouble("CamHeight3",0.04));
     cameraList.push_back(cam3);
 
 }
@@ -162,10 +164,17 @@ void MainWindow::drawCameras(QPainter *p)
                 else p->setPen(QPen(QColor(255,255,0),2));
         }
         int range1 =0.5*mScale,range2 = 0.8*mScale;
-        double ele1 = cam->elevation()-8;
-        double ele2 = cam->elevation()+8;
-        if(ele1)range1= cam->getHeight()/tan(-ele1/DEG2RAD)*mScale;
-        if(ele2)range2= cam->getHeight()/tan(-ele2/DEG2RAD)*mScale;
+        double ele1 = cam->elevation()-8.0;
+        double ele2 = cam->elevation()+8.0;
+        if(ele2<0&&ele1<0)
+        {
+            if(ele1)range1= cam->getHeight()/tan(-ele1/DEG2RAD)*mScale;
+            if(ele2)range2= cam->getHeight()/tan(-ele2/DEG2RAD)*mScale;
+        }
+        else
+        {
+            range1=0; range2 = 5.0*mScale;
+        }
         double azi = cam->azi()-9;
         p->drawLine(cameraX+range1*sin(azi/DEG2RAD),cameraY-range1*cos(azi/DEG2RAD),cameraX+range2*sin(azi/DEG2RAD),cameraY-range2*cos(azi/DEG2RAD));
         for(;azi<cam->azi()+9;azi+=1)

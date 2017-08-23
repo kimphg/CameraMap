@@ -17,6 +17,7 @@ CCamera::CCamera()
     mHeight = 0.03;
     isScaning = false;
     isOnline = false;
+    isNetworkRequestAwaiting  =0;
 }
 
 bool CCamera::CheckLastReply()
@@ -59,12 +60,12 @@ bool CCamera::CheckLastReply()
 }
 void CCamera::requestAzi(QMainWindow *parent)
 {
-    if(isNetworkRequestAwaiting)
+    if(isNetworkRequestAwaiting>5)
     {
         isOnline = false;
         return;
     }
-    isNetworkRequestAwaiting = true;
+    isNetworkRequestAwaiting +=1;
     QNetworkAccessManager *qnam = new QNetworkAccessManager(parent);
     QEventLoop loop;
     double oldAzi = mAzi;
@@ -107,13 +108,17 @@ void CCamera::requestAzi(QMainWindow *parent)
 
     }
     qnam->deleteLater();
-    isNetworkRequestAwaiting = false;
+    isNetworkRequestAwaiting = 0;
 }
 
 void CCamera::requestElevation(QMainWindow *parent)
 {
-    if(isNetworkRequestAwaiting)return;
-    isNetworkRequestAwaiting = true;
+    if(isNetworkRequestAwaiting>5)
+    {
+        isOnline = false;
+        return;
+    }
+    isNetworkRequestAwaiting +=1;
     QNetworkAccessManager *qnam = new QNetworkAccessManager(parent);
     QEventLoop loop;
     QNetworkReply *reply ;
@@ -153,7 +158,7 @@ void CCamera::requestElevation(QMainWindow *parent)
     }
     qnam->deleteLater();
     reply->deleteLater();
-    isNetworkRequestAwaiting = false;
+    isNetworkRequestAwaiting = 0;
 }
 
 double CCamera::elevation() const
@@ -179,6 +184,11 @@ double CCamera::getHeight() const
 bool CCamera::getIsOnline() const
 {
     return isOnline;
+}
+
+void CCamera::setHeight(double height)
+{
+    mHeight = height;
 }
 
 QString CCamera::iP() const

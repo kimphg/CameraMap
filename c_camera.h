@@ -45,6 +45,8 @@ public:
 
     bool getIsOnline() const;
 
+    void setHeight(double height);
+
 private:
     //QNetworkReply *reply;
     double  mLat,mLon;
@@ -52,7 +54,7 @@ private:
     bool mAlarm;
     double mAzi,mElevation,mAziNorth;
     bool isScaning,isOnline;
-    bool isNetworkRequestAwaiting;
+    int isNetworkRequestAwaiting;
     QString mIP,mUserName,mPassword,mCamName;
     bool CheckLastReply();
 };
