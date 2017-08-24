@@ -106,7 +106,6 @@ void CCamera::requestAzi()
     reply = qnam->get(QNetworkRequest(QUrl("http://"
                                            +mUserName+":"+mPassword+"@"+ mIP
                                            +"/rcp.xml?command=0x09A5&type=P_OCTET&direction=WRITE&num=1&payload=0x810006011201")));
-
     QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     QObject::connect(mParent, SIGNAL(destroyed()), &loop, SLOT(quit()));
     loop.exec();
@@ -141,6 +140,7 @@ void CCamera::requestAzi()
         xmlReader.readNext();
 
     }
+    reply->deleteLater();
     qnam->deleteLater();
     isNetworkRequestAwaiting = 0;
     checkSkipAzi();
@@ -211,18 +211,20 @@ void CCamera::setElevation(double elevation)
     while(tilt<0) tilt+=360;
     while(tilt>360) tilt-=360;
     tilt = tilt/DEG2RAD*10000.0;
-    QString value = QString::number( int(tilt), 16 );
+    QString value = QString::number(int(tilt), 16);
     while(value.size()<4)value = "0" + value;
     QNetworkAccessManager *qnam = new QNetworkAccessManager();
     QEventLoop loop;
     QNetworkReply *reply ;
     reply = qnam->get(QNetworkRequest(QUrl("http://"
-            +mUserName+":"+mPassword+"@"+ mIP
+            + mUserName + ":" + mPassword + "@" + mIP
             +"/rcp.xml?command=0x09A5&type=P_OCTET&direction=WRITE&num=1&payload=0x810006011303"
             +value)));
 
     QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
+    qnam->deleteLater();
+    reply->deleteLater();
 }
 
 bool CCamera::getIsScaning() const
@@ -344,6 +346,8 @@ void CCamera::setAzi(double azi)
 
     QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
     loop.exec();
+    qnam->deleteLater();
+    reply->deleteLater();
 }
 
 bool CCamera::alarm() const
