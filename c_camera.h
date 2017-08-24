@@ -8,9 +8,10 @@
 //extern CConfig *mConfig;
 class CCamera
 {
+
 public:
-    CCamera();
-    void    requestAzi(QMainWindow *parent);
+    CCamera(QMainWindow *parent);
+    void    requestAzi();
     void    requestElevation();
     QString camName() const;
     void setCamName(const QString &camName);
@@ -35,7 +36,6 @@ public:
     double aziNorth() const;
     void setAziNorth(double aziNorth);
 
-    void requestElevation(QMainWindow *parent);
     double elevation() const;
     void setElevation(double elevation);
 
@@ -47,16 +47,30 @@ public:
 
     void setHeight(double height);
 
+    double getSkipAzi() const;
+    void setSkipAzi(double skipAzi);
+
+    double getSkipAziSize() const;
+    void setSkipAziSize(double skipAziSize);
+    void checkSkipAzi();
+    void StartScan(int rate);
 private:
     //QNetworkReply *reply;
+    QMainWindow *mParent;
     double  mLat,mLon;
     double mHeight;
     bool mAlarm;
+    bool delayScan;
+    double scanningElevation;
     double mAzi,mElevation,mAziNorth;
     bool isScaning,isOnline;
     int isNetworkRequestAwaiting;
+    double mElevHorizon;
+    double mSkipAzi,mSkipAziSize;
     QString mIP,mUserName,mPassword,mCamName;
     bool CheckLastReply();
+
+    void changeElevation();
 };
 
 #endif // C_CAMERA_H

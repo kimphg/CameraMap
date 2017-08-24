@@ -10,6 +10,7 @@ CConfig *mConfig= new CConfig;
 QList<CCamera*> cameraList;
 QTimer *pUpdateTimer;
 QUdpSocket *udpSocket;
+QThread* mThread ;
 MainWindow::MainWindow(QWidget *parent) :dxMap(0),dyMap(0),
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -17,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :dxMap(0),dyMap(0),
     //init UI elements
     ui->setupUi(this);
     ui->frame->setHidden(true);
-    this->setGeometry(100,100,1024,768);
+    this->setGeometry(200,200,800,800);
     //Load initial setting from config file
     LoadSettings();
     // init Map Object
@@ -29,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :dxMap(0),dyMap(0),
     //pUpdateTimer->start(1000);
     isPressed = false;
     initCameras();
-    QThread* mThread = new QThread(this);
+    mThread = new QThread(this);
     QTimer* timer = new QTimer(0); //parent must be null
     timer->setInterval(1000);
     timer->start();
@@ -44,11 +45,10 @@ void MainWindow::updateCameras()
     camBlinking = (!camBlinking);
     foreach (CCamera *cam, cameraList)
     {
-        cam->requestAzi(this);
-        cam->requestElevation(this);
+        cam->requestAzi();
+        cam->requestElevation();
         update();
     }
-
 }
 int MainWindow::lon2x(double lon)
 {
@@ -62,29 +62,35 @@ int MainWindow::lat2y(double lat)
 
 void MainWindow::initCameras()
 {
-    CCamera *cam1 = new CCamera();
+    CCamera *cam1 = new CCamera(this);
     cam1->setCamName("Camera 1");
     cam1->setIP("192.168.100.100");
     cam1->setAziNorth(mConfig->getDouble("AziNorth1",0));
     cam1->setLat(21.111230);
     cam1->setLon(105.322770);
     cam1->setHeight(mConfig->getDouble("CamHeight1",0.03));
+    cam1->setSkipAzi(mConfig->getDouble("SkipAzi1",0));
+    cam1->setSkipAziSize(mConfig->getDouble("SkipAziSize1",30));
     cameraList.push_back(cam1);
-    CCamera *cam2 = new CCamera();
+    CCamera *cam2 = new CCamera(this);
     cam2->setCamName("Camera 2");
     cam2->setIP("192.168.100.101");
     cam2->setAziNorth(mConfig->getDouble("AziNorth2",0));
     cam2->setLat(21.125846);
     cam2->setLon(105.322995);
     cam2->setHeight(mConfig->getDouble("CamHeight2",0.04));
+    cam2->setSkipAzi(mConfig->getDouble("SkipAzi2",0));
+    cam2->setSkipAziSize(mConfig->getDouble("SkipAziSize2",30));
     cameraList.push_back(cam2);
-    CCamera *cam3 = new CCamera();
+    CCamera *cam3 = new CCamera(this);
     cam3->setCamName("Camera 3");
     cam3->setIP("192.168.100.102");
     cam3->setAziNorth(mConfig->getDouble("AziNorth3",0));
     cam3->setLat(21.107606);
     cam3->setLon(105.3304);
     cam3->setHeight(mConfig->getDouble("CamHeight3",0.04));
+    cam3->setSkipAzi(mConfig->getDouble("SkipAzi3",0));
+    cam3->setSkipAziSize(mConfig->getDouble("SkipAziSize3",30));
     cameraList.push_back(cam3);
 
 }
@@ -99,6 +105,7 @@ MainWindow::~MainWindow()
 {
     delete ui;
     delete mConfig;
+    mThread->deleteLater();
 }
 void MainWindow::drawMap(QPainter *p)
 {
