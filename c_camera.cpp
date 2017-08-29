@@ -11,6 +11,7 @@ CCamera::CCamera(QMainWindow *parent)
     mIP = "192.168.100.100";
     mUserName = "service";
     mPassword = "12345678";
+    mCamType = "unknown";
     mAzi = 0;
     mAziNorth = 0;
     mElevation = -25;
@@ -289,6 +290,45 @@ void CCamera::StartScan(int rate)
     loop.exec();
     qnam->deleteLater();
     reply->deleteLater();
+}
+
+QString CCamera::toString()
+{
+    QString res = camName();
+    res = res + ";" + QString::number(mLat)
+            + ";" + QString::number(mLon)
+            + ";" + QString::number(mHeight)
+            + ";" + QString::number(mAziNorth)
+            + ";" + mCamType
+            + ";" + mIP
+            + ";" + mUserName
+            + ";" + mPassword;//mIP,mUserName,mPassword
+    return res;
+}
+bool CCamera::fromString(QString str)
+{
+    QStringList strList =str.split(';');
+    if(strList.size()<8)return false;
+    setCamName(strList.at(0));
+    setLat(strList.at(1).toDouble());
+    setLon(strList.at(2).toDouble());
+    setHeight(strList.at(3).toDouble());
+    setAziNorth(strList.at(4).toDouble());
+    setCamType(strList.at(5));
+    setIP(strList.at(6));
+    setUserName(strList.at(7));
+    setPassword(strList.at(8));
+    return true;
+}
+
+QString CCamera::getCamType() const
+{
+    return mCamType;
+}
+
+void CCamera::setCamType(const QString &camType)
+{
+    mCamType = camType;
 }
 QString CCamera::iP() const
 {

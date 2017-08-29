@@ -54,6 +54,11 @@ public:
     void setSkipAziSize(double skipAziSize);
     void checkSkipAzi();
     void StartScan(int rate);
+    QString toString();
+    bool fromString(QString str);
+    QString getCamType() const;
+    void setCamType(const QString &camType);
+
 private:
     //QNetworkReply *reply;
     QMainWindow *mParent;
@@ -67,7 +72,7 @@ private:
     int isNetworkRequestAwaiting;
     double mElevHorizon;
     double mSkipAzi,mSkipAziSize;
-    QString mIP,mUserName,mPassword,mCamName;
+    QString mIP,mUserName,mPassword,mCamName,mCamType;
     bool CheckLastReply();
 
     void changeElevation();

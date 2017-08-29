@@ -32,6 +32,7 @@ private slots:
     void on_lineEdit_returnPressed();
     void readPendingDatagrams();
     void updateCameras();
+    void resetCameras();
 private:
 
     double mLat,mLon;
@@ -51,6 +52,7 @@ private:
     void initSocket();
 
     void processUdpData(QByteArray buffer);
+
 };
 
 #endif // MAINWINDOW_H

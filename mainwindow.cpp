@@ -9,6 +9,7 @@ bool camBlinking = false;
 CConfig *mConfig= new CConfig;
 QList<CCamera*> cameraList;
 QTimer *pUpdateTimer;
+
 QUdpSocket *udpSocket;
 QThread* mThread ;
 MainWindow::MainWindow(QWidget *parent) :dxMap(0),dyMap(0),
@@ -32,13 +33,23 @@ MainWindow::MainWindow(QWidget *parent) :dxMap(0),dyMap(0),
     initCameras();
     mThread = new QThread(this);
     QTimer* timer = new QTimer(0); //parent must be null
+    QTimer *pResetTimer = new QTimer(0);
     timer->setInterval(1000);
     timer->start();
+    pResetTimer->setInterval(900000);
+    pResetTimer->start();
     timer->moveToThread(mThread);
+    pResetTimer->moveToThread(mThread);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateCameras()));
+    connect(pResetTimer, SIGNAL(timeout()), this, SLOT(resetCameras()));
     connect(this, SIGNAL(destroyed()), mThread, SLOT(quit()));
     mThread->start();
+    resetCameras();
 
+}
+void MainWindow::resetCameras()
+{
+    system("reset.bat");
 }
 void MainWindow::updateCameras()
 {
@@ -72,6 +83,7 @@ void MainWindow::initCameras()
     cam1->setSkipAzi(mConfig->getDouble("SkipAzi1",0));
     cam1->setSkipAziSize(mConfig->getDouble("SkipAziSize1",30));
     cameraList.push_back(cam1);
+    mConfig->setValue(cam1->camName(),cam1->toString());
     CCamera *cam2 = new CCamera(this);
     cam2->setCamName("Camera 2");
     cam2->setIP("192.168.100.101");
@@ -82,6 +94,7 @@ void MainWindow::initCameras()
     cam2->setSkipAzi(mConfig->getDouble("SkipAzi2",0));
     cam2->setSkipAziSize(mConfig->getDouble("SkipAziSize2",30));
     cameraList.push_back(cam2);
+    mConfig->setValue(cam2->camName(),cam2->toString());
     CCamera *cam3 = new CCamera(this);
     cam3->setCamName("Camera 3");
     cam3->setIP("192.168.100.102");
@@ -92,6 +105,7 @@ void MainWindow::initCameras()
     cam3->setSkipAzi(mConfig->getDouble("SkipAzi3",0));
     cam3->setSkipAziSize(mConfig->getDouble("SkipAziSize3",30));
     cameraList.push_back(cam3);
+    mConfig->setValue(cam3->camName(),cam3->toString());
 
 }
 void MainWindow::LoadSettings()
