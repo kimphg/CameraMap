@@ -76,25 +76,25 @@ void MainWindow::initCameras()
     CCamera *cam1 = new CCamera(this);
     cam1->setCamName("Camera 1");
     cam1->setIP("192.168.100.100");
-    cam1->setAziNorth(mConfig->getDouble("AziNorth1",0));
+    cam1->setAziNorth(mConfig->getDouble("AziNorth1",83));
     cam1->setLat(21.111230);
     cam1->setLon(105.322770);
-    cam1->setHeight(mConfig->getDouble("CamHeight1",0.03));
-    cam1->setSkipAzi(mConfig->getDouble("SkipAzi1",0));
+    cam1->setHeight(mConfig->getDouble("CamHeight1",0.035));
+    cam1->setSkipAzi(mConfig->getDouble("SkipAzi1",335));
     cam1->setSkipAziSize(mConfig->getDouble("SkipAziSize1",30));
     cameraList.push_back(cam1);
-    mConfig->setValue(cam1->camName(),cam1->toString());
+    //mConfig->setValue(cam1->camName(),cam1->toString());
     CCamera *cam2 = new CCamera(this);
     cam2->setCamName("Camera 2");
     cam2->setIP("192.168.100.101");
-    cam2->setAziNorth(mConfig->getDouble("AziNorth2",0));
+    cam2->setAziNorth(mConfig->getDouble("AziNorth2",123));
     cam2->setLat(21.125846);
     cam2->setLon(105.322995);
     cam2->setHeight(mConfig->getDouble("CamHeight2",0.04));
     cam2->setSkipAzi(mConfig->getDouble("SkipAzi2",0));
     cam2->setSkipAziSize(mConfig->getDouble("SkipAziSize2",30));
     cameraList.push_back(cam2);
-    mConfig->setValue(cam2->camName(),cam2->toString());
+    //mConfig->setValue(cam2->camName(),cam2->toString());
     CCamera *cam3 = new CCamera(this);
     cam3->setCamName("Camera 3");
     cam3->setIP("192.168.100.102");
@@ -105,13 +105,13 @@ void MainWindow::initCameras()
     cam3->setSkipAzi(mConfig->getDouble("SkipAzi3",0));
     cam3->setSkipAziSize(mConfig->getDouble("SkipAziSize3",30));
     cameraList.push_back(cam3);
-    mConfig->setValue(cam3->camName(),cam3->toString());
+    //mConfig->setValue(cam3->camName(),cam3->toString());
 
 }
 void MainWindow::LoadSettings()
 {
     mScale = mConfig->getDouble("mScale",500);
-    mPath = mConfig->getString("mPath","C:/Mapdata/");
+    mPath = mConfig->getString("mPath","C:/FlameRun/Mapdata/newtask/");
     mLat = mConfig->getDouble("mLat",21.117);
     mLon = mConfig->getDouble("mLon",105.325);
 }
