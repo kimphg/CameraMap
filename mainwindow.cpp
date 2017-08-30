@@ -63,12 +63,12 @@ void MainWindow::updateCameras()
 }
 int MainWindow::lon2x(double lon)
 {
-   double refLat = mLat*0.00872664625997f;
-   return  ( width()/2.0 + dxMap + ((lon - mLon) * 105.0*cos(refLat))*mScale);
+    double refLat = mLat*0.00872664625997f;
+    return  ( width()/2.0 + dxMap + ((lon - mLon) * 105.0*cos(refLat))*mScale);
 }
 int MainWindow::lat2y(double lat)
 {
-   return (height()/2.0 + dyMap - ((lat - mLat) * 111.31949079327357)*mScale);
+    return (height()/2.0 + dyMap - ((lat - mLat) * 111.31949079327357)*mScale);
 }
 
 void MainWindow::initCameras()
@@ -126,9 +126,9 @@ void MainWindow::drawMap(QPainter *p)
     ui->label_scale->setText("OSM scale factor:" + QString::number(map->getScaleRatio()));
     QPixmap pix = map->getImage(mScale);
     p->drawPixmap((width()/2.0-pix.width()/2.0)+dxMap,
-                 (height()/2.0-pix.height()/2.0)+dyMap,
-                 pix.width(),pix.height(),pix
-                 );
+                  (height()/2.0-pix.height()/2.0)+dyMap,
+                  pix.width(),pix.height(),pix
+                  );
     p->setPen(QPen(Qt::white,2));
 
     // draw the reference 1km line in top left of the map
@@ -167,43 +167,64 @@ void MainWindow::drawMap(QPainter *p)
 
 void MainWindow::drawCameras(QPainter *p)
 {
+
     foreach (CCamera *cam, cameraList) {
+        // vẽ vòng tròn tại vị trí của camera
         int cameraX = lon2x(cam->lon());
         int cameraY = lat2y(cam->lat());
         p->setPen(QPen(QColor(255,255,0),2));
         p->drawEllipse(cameraX-8,cameraY-8,16,16);
         p->drawText(cameraX-5,cameraY+15,100,100,0,cam->camName());
-        p->drawText(cameraX-5,cameraY+25,100,100,0,QString::number(cam->azi(),'f',1));
-        p->drawText(cameraX-5,cameraY+35,100,100,0,QString::number(cam->elevation(),'f',1));
+        p->drawText(cameraX-5,cameraY+25,100,100,0,"Phương vị: "+QString::number(cam->azi(),'f',1));
+        p->drawText(cameraX-5,cameraY+35,100,100,0,"Góc tà: "+QString::number(cam->elevation(),'f',1));
+        // gạch chéo nếu camera ko online
         if(!cam->getIsOnline())
         {
-           p->drawLine(cameraX-6,cameraY-6,cameraX+6,cameraY+6);
+            p->drawLine(cameraX-6,cameraY-6,cameraX+6,cameraY+6);
         }
+        //vẽ khung rẻ quạt quan sát
+        bool isAlarm = cam->alarm()||(!cam->getIsScaning());
         if(camBlinking){
-            if(cam->alarm()||(!cam->getIsScaning()))
-                p->setPen(QPen(QColor(255,0,0),3));
-                else p->setPen(QPen(QColor(255,255,0),2));
+            if(isAlarm)
+            {
+                p->setPen(QPen(QColor(255,0,0),2));
+
+            }
         }
-        int range1 =0.5*mScale,range2 = 0.8*mScale;
-        double ele1 = cam->elevation()-8.0;
-        double ele2 = cam->elevation()+8.0;
-        if(ele2<0&&ele1<0)
-        {
-            if(ele1)range1= cam->getHeight()/tan(-ele1/DEG2RAD)*mScale;
-            if(ele2)range2= cam->getHeight()/tan(-ele2/DEG2RAD)*mScale;
-        }
+        int rangeMin =0.5*mScale,rangeMax = 0.8*mScale,rangeCenter;
+        double eleMin = cam->elevation()-8.0;
+        double eleMax = cam->elevation()+8.0;
+        if(eleMin<0)
+            rangeMin= cam->getHeight()/tan(-eleMin/DEG2RAD)*mScale;
         else
+            rangeMin=5;
+        if(eleMax<0)
+            rangeMax= cam->getHeight()/tan(-eleMax/DEG2RAD)*mScale;
+        else
+            rangeMax=5;
+        if(cam->elevation()<0)
+            rangeCenter= cam->getHeight()/tan(-cam->elevation()/DEG2RAD)*mScale;
+        else
+            rangeCenter = 5;
+        double azi = cam->azi()-8;
+        p->drawLine(cameraX+rangeMin*sin(azi/DEG2RAD),cameraY-rangeMin*cos(azi/DEG2RAD),cameraX+rangeMax*sin(azi/DEG2RAD),cameraY-rangeMax*cos(azi/DEG2RAD));
+        for(;azi<cam->azi()+8;azi+=1)
         {
-            range1=0; range2 = 5.0*mScale;
+            p->drawPoint(cameraX+rangeMin*sin(azi/DEG2RAD),cameraY-rangeMin*cos(azi/DEG2RAD));
+            p->drawPoint(cameraX+rangeMax*sin(azi/DEG2RAD),cameraY-rangeMax*cos(azi/DEG2RAD));
         }
-        double azi = cam->azi()-9;
-        p->drawLine(cameraX+range1*sin(azi/DEG2RAD),cameraY-range1*cos(azi/DEG2RAD),cameraX+range2*sin(azi/DEG2RAD),cameraY-range2*cos(azi/DEG2RAD));
-        for(;azi<cam->azi()+9;azi+=1)
+        p->drawLine(cameraX+rangeMin*sin(azi/DEG2RAD),cameraY-rangeMin*cos(azi/DEG2RAD),cameraX+rangeMax*sin(azi/DEG2RAD),cameraY-rangeMax*cos(azi/DEG2RAD));
+        if(isAlarm)
         {
-            p->drawPoint(cameraX+range1*sin(azi/DEG2RAD),cameraY-range1*cos(azi/DEG2RAD));
-            p->drawPoint(cameraX+range2*sin(azi/DEG2RAD),cameraY-range2*cos(azi/DEG2RAD));
+            QPoint center(cameraX+rangeCenter*sin(cam->azi()/DEG2RAD),cameraY-rangeCenter*cos(cam->azi()/DEG2RAD));
+            drawCrossHairMark(center.x(),center.y(),p);
+            QPoint scrCenter(width()/2,height()/2);
+            double lat,lon;
+            map->ConvKmToWGS((center.x()-scrCenter.x())/mScale,(scrCenter.y()-center.y())/mScale,&lat,&lon);
+
+            p->drawText(center.x()-5,center.y()+15,100,100,0,"KĐ: "+QString::number(lat,'f',4));
+            p->drawText(center.x()-5,center.y()+25,100,100,0,"VĐ: "+QString::number(lon,'f',4));
         }
-        p->drawLine(cameraX+range1*sin(azi/DEG2RAD),cameraY-range1*cos(azi/DEG2RAD),cameraX+range2*sin(azi/DEG2RAD),cameraY-range2*cos(azi/DEG2RAD));
 
     }
 }
@@ -264,27 +285,27 @@ void MainWindow::resizeEvent(QResizeEvent *)
 
 void MainWindow::keyPressEvent(QKeyEvent *e)
 {
-//    if (e->key() != Qt::Key_Z )
-//    {
-//        return;
-//    }
-//    else{
-//        int zoom = (int) map->getScaleRatio();
-//        switch(zoom)
-//        {
-//        case 14: map->setScaleRatio(15);
-//            break;
-//        case 15: map->setScaleRatio(16);
-//            break;
-//        case 16: map->setScaleRatio(14);
-//            break;
-//        default: map->setScaleRatio(15);
-//            break;
-//        }
+    //    if (e->key() != Qt::Key_Z )
+    //    {
+    //        return;
+    //    }
+    //    else{
+    //        int zoom = (int) map->getScaleRatio();
+    //        switch(zoom)
+    //        {
+    //        case 14: map->setScaleRatio(15);
+    //            break;
+    //        case 15: map->setScaleRatio(16);
+    //            break;
+    //        case 16: map->setScaleRatio(14);
+    //            break;
+    //        default: map->setScaleRatio(15);
+    //            break;
+    //        }
 
-//        map->invalidate();
-//        map->UpdateImage();
-//    }
+    //        map->invalidate();
+    //        map->UpdateImage();
+    //    }
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *e)

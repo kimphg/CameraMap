@@ -20,26 +20,13 @@ SOURCES += main.cpp\
     cmap.cpp \
     c_config.cpp \
     c_camera.cpp \
-    videoHandler/FeatureAnalyzer.cpp \
-    videoHandler/FlameDecider.cpp \
-    videoHandler/FlameDetector.cpp \
-    videoHandler/TargetExtractor.cpp \
-    videoHandler/utils.cpp \
-    videoHandler/VideoHandler.cpp \
-    videoHandler/videowork.cpp
+
 
 HEADERS  += mainwindow.h \
     cmap.h \
     c_config.h \
     c_camera.h \
-    videoHandler/common.h \
-    videoHandler/FeatureAnalyzer.h \
-    videoHandler/FlameDecider.h \
-    videoHandler/FlameDetector.h \
-    videoHandler/TargetExtractor.h \
-    videoHandler/utils.h \
-    videoHandler/VideoHandler.h \
-    videoHandler/videowork.h
+
 
 FORMS    += mainwindow.ui
 win32:RC_ICONS += icon.ico
