@@ -10,6 +10,7 @@ class CCamera
 {
 
 public:
+
     CCamera(QMainWindow *parent);
     void    requestAzi();
     void    requestElevation();
@@ -61,6 +62,7 @@ public:
 
 private:
     //QNetworkReply *reply;
+    int curEle ;
     QMainWindow *mParent;
     double  mLat,mLon;
     double mHeight;

@@ -7,6 +7,7 @@
 
 CCamera::CCamera(QMainWindow *parent)
 {
+    curEle = 1;
     mParent = parent;
     mIP = "192.168.100.100";
     mUserName = "service";
@@ -64,7 +65,7 @@ bool CCamera::CheckLastReply()
     }*/
     return true;
 }
-int curEle = 1;
+
 void CCamera::changeElevation()
 {
     if(curEle==1)
@@ -98,6 +99,7 @@ void CCamera::requestAzi()
         StartScan(3);
         changeElevation();
         delayScan = false;
+
     }
     isNetworkRequestAwaiting +=1;
     QNetworkAccessManager *qnam = new QNetworkAccessManager(mParent);
@@ -131,7 +133,7 @@ void CCamera::requestAzi()
                 mAzi+= mAziNorth;
                 if(mAzi<0)mAzi +=360;
                 if(mAzi>=360)mAzi -=360;
-                if(qAbs(mAzi-oldAzi)<0.3)isScaning = false;
+                if(qAbs(mAzi-oldAzi)<0.2)isScaning = false;
                 else    isScaning=true;
                 isOnline = true;
             }
@@ -302,13 +304,15 @@ QString CCamera::toString()
             + ";" + mCamType
             + ";" + mIP
             + ";" + mUserName
-            + ";" + mPassword;//mIP,mUserName,mPassword
+            + ";" + mPassword
+            + ";" + QString::number(mSkipAzi)
+            + ";" + QString::number(mSkipAziSize);//mIP,mUserName,mPassword
     return res;
 }
 bool CCamera::fromString(QString str)
 {
     QStringList strList =str.split(';');
-    if(strList.size()<8)return false;
+    if(strList.size()<11)return false;
     setCamName(strList.at(0));
     setLat(strList.at(1).toDouble());
     setLon(strList.at(2).toDouble());
@@ -318,6 +322,8 @@ bool CCamera::fromString(QString str)
     setIP(strList.at(6));
     setUserName(strList.at(7));
     setPassword(strList.at(8));
+    setSkipAzi(strList.at(9).toDouble());
+    setSkipAziSize(strList.at(10).toDouble());
     return true;
 }
 

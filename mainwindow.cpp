@@ -74,36 +74,40 @@ int MainWindow::lat2y(double lat)
 void MainWindow::initCameras()
 {
     CCamera *cam1 = new CCamera(this);
-    cam1->setCamName("Camera 1");
-    cam1->setIP("192.168.100.100");
-    cam1->setAziNorth(mConfig->getDouble("AziNorth1",83));
-    cam1->setLat(21.111230);
-    cam1->setLon(105.322770);
-    cam1->setHeight(mConfig->getDouble("CamHeight1",0.035));
-    cam1->setSkipAzi(mConfig->getDouble("SkipAzi1",335));
-    cam1->setSkipAziSize(mConfig->getDouble("SkipAziSize1",30));
+//    cam1->setCamName("Camera 1");
+//    cam1->setIP("192.168.100.100");
+//    cam1->setAziNorth(mConfig->getDouble("AziNorth1",83));
+//    cam1->setLat(21.111230);
+//    cam1->setLon(105.322770);
+//    cam1->setHeight(mConfig->getDouble("CamHeight1",0.035));
+//    cam1->setSkipAzi(mConfig->getDouble("SkipAzi1",335));
+//    cam1->setSkipAziSize(mConfig->getDouble("SkipAziSize1",30));
+    cam1->fromString(mConfig->getString("Camera_1","Camera 1;21.1112;105.323;0.03;0;unknown;192.168.100.100;service;12345678"));
     cameraList.push_back(cam1);
+
     //mConfig->setValue(cam1->camName(),cam1->toString());
     CCamera *cam2 = new CCamera(this);
-    cam2->setCamName("Camera 2");
-    cam2->setIP("192.168.100.101");
-    cam2->setAziNorth(mConfig->getDouble("AziNorth2",123));
-    cam2->setLat(21.125846);
-    cam2->setLon(105.322995);
-    cam2->setHeight(mConfig->getDouble("CamHeight2",0.04));
-    cam2->setSkipAzi(mConfig->getDouble("SkipAzi2",0));
-    cam2->setSkipAziSize(mConfig->getDouble("SkipAziSize2",30));
+//    cam2->setCamName("Camera 2");
+//    cam2->setIP("192.168.100.101");
+//    cam2->setAziNorth(mConfig->getDouble("AziNorth2",123));
+//    cam2->setLat(21.125846);
+//    cam2->setLon(105.322995);
+//    cam2->setHeight(mConfig->getDouble("CamHeight2",0.04));
+//    cam2->setSkipAzi(mConfig->getDouble("SkipAzi2",0));
+//    cam2->setSkipAziSize(mConfig->getDouble("SkipAziSize2",30));
+    cam2->fromString(mConfig->getString("Camera_2","Camera 2;21.1258;105.323;0.04;0;unknown;192.168.100.101;service;12345678"));
     cameraList.push_back(cam2);
     //mConfig->setValue(cam2->camName(),cam2->toString());
     CCamera *cam3 = new CCamera(this);
-    cam3->setCamName("Camera 3");
-    cam3->setIP("192.168.100.102");
-    cam3->setAziNorth(mConfig->getDouble("AziNorth3",0));
-    cam3->setLat(21.107606);
-    cam3->setLon(105.3304);
-    cam3->setHeight(mConfig->getDouble("CamHeight3",0.04));
-    cam3->setSkipAzi(mConfig->getDouble("SkipAzi3",0));
-    cam3->setSkipAziSize(mConfig->getDouble("SkipAziSize3",30));
+//    cam3->setCamName("Camera 3");
+//    cam3->setIP("192.168.100.102");
+//    cam3->setAziNorth(mConfig->getDouble("AziNorth3",0));
+//    cam3->setLat(21.107606);
+//    cam3->setLon(105.3304);
+//    cam3->setHeight(mConfig->getDouble("CamHeight3",0.04));
+//    cam3->setSkipAzi(mConfig->getDouble("SkipAzi3",0));
+//    cam3->setSkipAziSize(mConfig->getDouble("SkipAziSize3",30));
+    cam3->fromString(mConfig->getString("Camera_3","Camera 3;21.1076;105.3304;0.04;0;unknown;192.168.100.102;service;12345678"));
     cameraList.push_back(cam3);
     //mConfig->setValue(cam3->camName(),cam3->toString());
 
@@ -119,7 +123,10 @@ MainWindow::~MainWindow()
 {
     delete ui;
     delete mConfig;
+
+    mThread->exit();
     mThread->deleteLater();
+    QApplication::quit();
 }
 void MainWindow::drawMap(QPainter *p)
 {
@@ -197,7 +204,7 @@ void MainWindow::drawCameras(QPainter *p)
         if(eleMin<0)
             rangeMin= cam->getHeight()/tan(-eleMin/DEG2RAD)*mScale;
         else
-            rangeMin=5;
+            rangeMin=2;
         if(eleMax<0)
             rangeMax= cam->getHeight()/tan(-eleMax/DEG2RAD)*mScale;
         else
@@ -205,7 +212,7 @@ void MainWindow::drawCameras(QPainter *p)
         if(cam->elevation()<0)
             rangeCenter= cam->getHeight()/tan(-cam->elevation()/DEG2RAD)*mScale;
         else
-            rangeCenter = 5;
+            rangeCenter = 3;
         double azi = cam->azi()-8;
         p->drawLine(cameraX+rangeMin*sin(azi/DEG2RAD),cameraY-rangeMin*cos(azi/DEG2RAD),cameraX+rangeMax*sin(azi/DEG2RAD),cameraY-rangeMax*cos(azi/DEG2RAD));
         for(;azi<cam->azi()+8;azi+=1)
